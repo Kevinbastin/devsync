@@ -21,7 +21,7 @@ export const updateDocumentSchema = z.object({
 
 export async function getDocuments(req: Request, res: Response, next: NextFunction) {
   try {
-    const workspaceId = req.params.workspaceId || req.params.id;
+    const workspaceId = String(req.params.workspaceId || req.params.id);
     const documents = await prisma.document.findMany({
       where: { workspaceId, isArchived: false, parentId: null },
       include: {
@@ -48,8 +48,9 @@ export async function getDocuments(req: Request, res: Response, next: NextFuncti
 
 export async function getDocument(req: Request, res: Response, next: NextFunction) {
   try {
+    const documentId = String(req.params.docId || req.params.id);
     const document = await prisma.document.findUnique({
-      where: { id: req.params.docId || req.params.id },
+      where: { id: documentId },
       include: {
         author: { select: { id: true, name: true, avatar: true } },
         children: {
@@ -72,7 +73,7 @@ export async function getDocument(req: Request, res: Response, next: NextFunctio
 
 export async function createDocument(req: Request, res: Response, next: NextFunction) {
   try {
-    const workspaceId = req.params.workspaceId || req.params.id;
+    const workspaceId = String(req.params.workspaceId || req.params.id);
     const { title, parentId, icon } = req.body;
 
     const document = await prisma.document.create({
@@ -105,10 +106,11 @@ export async function createDocument(req: Request, res: Response, next: NextFunc
 
 export async function updateDocument(req: Request, res: Response, next: NextFunction) {
   try {
+    const documentId = String(req.params.docId || req.params.id);
     const { title, content, icon, isPublished, isArchived } = req.body;
 
     const document = await prisma.document.update({
-      where: { id: req.params.docId || req.params.id },
+      where: { id: documentId },
       data: {
         ...(title !== undefined && { title }),
         ...(content !== undefined && { content }),
@@ -129,9 +131,10 @@ export async function updateDocument(req: Request, res: Response, next: NextFunc
 
 export async function deleteDocument(req: Request, res: Response, next: NextFunction) {
   try {
+    const documentId = String(req.params.docId || req.params.id);
     // Soft delete
     await prisma.document.update({
-      where: { id: req.params.docId || req.params.id },
+      where: { id: documentId },
       data: { isArchived: true },
     });
     res.json({ message: 'Document archived' });

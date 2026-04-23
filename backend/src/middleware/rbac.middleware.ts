@@ -8,7 +8,7 @@ export function requireRole(...roles: Role[]) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.userId;
-      const workspaceId = req.params.workspaceId || req.params.id;
+      const workspaceId = String(req.params.workspaceId || req.params.id);
 
       if (!userId || !workspaceId) {
         throw new ForbiddenError('Missing user or workspace context');

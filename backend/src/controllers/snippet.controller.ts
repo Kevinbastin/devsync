@@ -13,7 +13,7 @@ export const createSnippetSchema = z.object({
 
 export async function getSnippets(req: Request, res: Response, next: NextFunction) {
   try {
-    const workspaceId = req.params.workspaceId || req.params.id;
+    const workspaceId = String(req.params.workspaceId || req.params.id);
     const snippets = await prisma.snippet.findMany({
       where: { workspaceId },
       include: { author: { select: { id: true, name: true, avatar: true } } },
@@ -25,7 +25,7 @@ export async function getSnippets(req: Request, res: Response, next: NextFunctio
 
 export async function createSnippet(req: Request, res: Response, next: NextFunction) {
   try {
-    const workspaceId = req.params.workspaceId || req.params.id;
+    const workspaceId = String(req.params.workspaceId || req.params.id);
     const { title, code, language, description } = req.body;
     const snippet = await prisma.snippet.create({
       data: { title, code, language, description, authorId: req.user!.userId, workspaceId },
@@ -40,9 +40,10 @@ export async function createSnippet(req: Request, res: Response, next: NextFunct
 
 export async function updateSnippet(req: Request, res: Response, next: NextFunction) {
   try {
+    const snippetId = String(req.params.snippetId);
     const { title, code, language, description } = req.body;
     const snippet = await prisma.snippet.update({
-      where: { id: req.params.snippetId },
+      where: { id: snippetId },
       data: { ...(title && { title }), ...(code && { code }), ...(language && { language }), ...(description !== undefined && { description }) },
       include: { author: { select: { id: true, name: true, avatar: true } } },
     });
@@ -52,7 +53,8 @@ export async function updateSnippet(req: Request, res: Response, next: NextFunct
 
 export async function deleteSnippet(req: Request, res: Response, next: NextFunction) {
   try {
-    await prisma.snippet.delete({ where: { id: req.params.snippetId } });
+    const snippetId = String(req.params.snippetId);
+    await prisma.snippet.delete({ where: { id: snippetId } });
     res.json({ message: 'Snippet deleted' });
   } catch (error) { next(error); }
 }

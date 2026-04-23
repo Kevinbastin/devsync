@@ -6,6 +6,16 @@
 - Backend: Render
 - Database: Neon, Supabase, or Render Postgres
 
+## Free deployment setup
+
+For a zero-cost setup, use:
+
+- Frontend: Vercel free plan
+- Backend: Oracle Cloud Always Free VM, or another free VM that supports long-lived connections
+- Database: Neon free plan
+
+This works better than trying to host the backend on a platform that sleeps or blocks WebSockets.
+
 This app is split into two services:
 
 - [frontend](frontend) — Next.js app
@@ -37,23 +47,45 @@ Set these in the frontend hosting service:
 ## Deploy backend
 
 1. Create a Postgres database.
-2. Create a web service from the [backend](backend) folder.
-3. Use these commands:
+2. Create a backend host.
+   - Best free option: Oracle Cloud Always Free VM
+3. Deploy the [backend](backend) folder.
+4. Use these commands:
    - Build: `npm install && npm run build`
    - Start: `npm start`
-4. Add the backend environment variables listed above.
-5. Run Prisma against the deployed database:
+5. Add the backend environment variables listed above.
+6. Run Prisma against the deployed database:
    - `npx prisma db push` for a simple schema sync, or
    - `npx prisma migrate deploy` if you add migrations later.
 
+### Backend Docker deployment
+
+If you use a free VM, you can deploy with Docker:
+
+- Build: `docker build -t devsync-backend ./backend`
+- Run: `docker run -d -p 5000:5000 --env-file ./backend/.env devsync-backend`
+
+Make sure the VM security rules allow inbound traffic on port 5000, or place a reverse proxy in front of it.
+
 ## Deploy frontend
 
-1. Create a web service from the [frontend](frontend) folder.
+1. Create a project on Vercel from the [frontend](frontend) folder.
 2. Use these commands:
    - Build: `npm install && npm run build`
    - Start: `npm start`
 3. Add the frontend environment variables listed above.
 4. Set `FRONTEND_URL` on the backend to the final frontend domain.
+
+## Cheapest practical alternative
+
+If you do not want to manage a VM, use the cheapest managed free tiers available in your region, but confirm they support:
+
+- persistent Node.js processes
+- Socket.io/WebSocket traffic
+- environment variables
+- PostgreSQL access
+
+If any of those are missing, the app will not work correctly.
 
 ## Notes
 
